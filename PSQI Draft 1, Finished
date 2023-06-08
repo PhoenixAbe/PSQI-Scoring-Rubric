@@ -1,0 +1,299 @@
+#/Users/beepo/Desktop/research/PSQI Sample Data - Sheet1.csv
+#/Users/beepo/Desktop/research/PSQI Sample Data, ERROR - Sheet1.csv
+
+file_path = input(f'Please enter the file path to the PSQI data: ')
+input_data = []
+#creating a new file to add results to
+new_file_path = 'RESULTS.csv'
+
+def calculate_time_difference(time1, time2):
+    # Extract hours, minutes, and AM/PM from time1
+    hour1 = time1[0]
+    minute1 = time1[1]
+    am_pm1 = time1[2]
+
+    # Extract hours, minutes, and AM/PM from time2
+    hour2 = time2[0]
+    minute2 = time2[1]
+    am_pm2 = time2[2]
+
+    # Convert hours to 24-hour format if time1 is PM and not 12:00 PM
+    if am_pm1.lower() == 'pm' and hour1 != 12:
+        hour1 += 12
+
+    # Convert hours to 24-hour format if time2 is PM and not 12:00 PM
+    if am_pm2.lower() == 'pm' and hour2 != 12:
+        hour2 += 12
+
+    # Handle case when time1 is 12:00 PM (noon)
+    if hour1 == 12 and am_pm1.lower() == 'pm':
+        hour1 = 0
+
+    # Handle case when time1 is 12:00 PM (midnight)
+    if hour1 == 12 and am_pm1.lower() == 'am': # check if these produce the correct output
+        hour1 = 0
+
+    # Handle case when time2 is 12:00 PM (noon)
+    if hour2 == 12 and am_pm2.lower() == 'pm':
+        hour2 = 0
+
+    # Handle case when time1 is 12:00 PM (midnight)
+    if hour2 == 12 and am_pm1.lower() == 'am':
+        hour1 = 0
+
+
+    # Calculate time difference in minutes
+    total_minutes1 = (hour1 * 60) + minute1
+    total_minutes2 = (hour2 * 60) + minute2
+    time_difference_in_minutes = total_minutes2 - total_minutes1
+
+    # Calculate total hours from time difference in minutes
+    total_hours = time_difference_in_minutes / 60
+    return total_hours
+
+with open(file_path, 'r') as file:
+    #opening file and creating a list of lists
+    for line in file:
+        row = line.strip().split(',')  # Assuming comma-separated values
+        input_data.append(row)
+
+first = True
+results_list = [['ID', 'dursub', 'distsub', 'latsub', 'dyssub', 'effsub', 'qualsub', 'medsub', 'inbed', 'hrslept', 'slepeff', 'bedtime', 'waktime', 'sleplat', 'global', 'catgry']]
+#new list to add results to
+
+for row in input_data:
+    row = row
+    scores = []
+    dur_score = 0
+    dstb_score = 0
+    laten_score = 0
+    day_dis_score = 0
+    hse_score = 0
+    slp_qual_score = 0
+    meds_score = 0
+    time_in_bed = 0
+    number_hours_slept = 0
+    total_score = 0
+
+    sleep_eff = 0
+    bedtime = 0
+    waketime = 0
+    sleep_lat = 0
+    hours_slept = 0
+    hours_in_bed = 0
+    bedtime_score = 0
+
+    filled = True
+    for part in row:
+        if part == '':
+            filled = False
+    if filled == True:  #checks that all rows are the correct length
+        if first:
+            #skipping the title row
+            first = False
+            pass
+        else:
+            scores.append(row[0])  # appending id
+            ###DUR SCORE###
+            if int(row[8]) >= 7:
+                dur_score = 0
+            elif (int(row[8]) < 7) and (int(row[8]) >= 6):
+                dur_score = 1
+            elif (int(row[8]) < 6) and (int(row[8]) >= 5):
+                dur_score = 2
+            elif int(row[8]) < 5 :
+                dur_score = 3
+            scores.append(dur_score)  # appending dur score
+
+            ###DSTB SCORE###
+            dstb_total = int(row[10]) + int(row[11]) + int(row[12]) + int(row[13]) + int(row[14]) + int(row[15]) +int(row[16]) + int(row[17]) + int(row[18])
+
+            if dstb_total == 0:
+                dstb_score = 0
+            elif 1 <= dstb_total <= 9:
+                dstb_score = 1
+            elif 9 < dstb_total <= 18:
+                dstb_score = 2
+            elif dstb_total > 18:
+                dstb_score = 3
+            scores.append(dstb_score) #appending dstb score
+
+            ###LATEN SCORE###
+            Q2 = int(row[4])
+            Q2_new = 0
+            if 0 <= Q2 <= 15: #recalculating Q2
+                Q2_new = 0
+            elif 15 < Q2 <= 30:
+                Q2_new = 1
+            elif 30 < Q2 <= 60:
+                Q2_new = 2
+            elif 60 < Q2:
+                Q2_new = 3
+
+            added_Q2 = int(row[9]) + Q2_new
+            if added_Q2 == 0: #calculating actual laten score
+                laten_score = 0
+            elif 1 <= added_Q2 <= 2:
+                laten_score = 1
+            elif 3 <= added_Q2 <= 4:
+                laten_score = 2
+            elif 5 <= added_Q2 <= 6:
+                laten_score = 3
+
+            scores.append(laten_score)  # appending laten score
+
+            ###DAY DYS SCORE###
+            day_dis = int(row[21]) + int(row[22])
+            if day_dis == 0:
+                day_dis_score = 0
+            elif 1 <= day_dis <= 2:
+                day_dis_score = 1
+            elif 3 <= day_dis <= 4:
+                day_dis_score = 2
+            elif 5 <= day_dis <= 6:
+                day_dis_score = 3
+            scores.append(day_dis_score)
+
+            ###HSE SCORE###
+            #add row 7
+            dash = False
+            for x in range(len(row)): # checking to see if a range is left in the file
+                if '-' in row[x]:
+                    dash = True
+            if dash == False:
+                time1 = [int(row[1]), int(row[2]), row[3]]
+                time2 = [int(row[5]), int(row[6]), row[7]]
+                total_hours = calculate_time_difference(time1, time2)
+                hours_in_bed = total_hours
+                tmphse = (int(row[8]) / total_hours) * 100
+                if tmphse >= 85:
+                    hse_score = 0
+                elif 75 <= tmphse < 85:
+                    hse_score = 1
+                elif 65 <= tmphse < 75:
+                    hse_score = 2
+                elif tmphse < 65:
+                    hse_score = 3
+                if total_hours < 0:
+                    hse_score = "ERROR: hours slept is negative"
+
+            if dash == True: #if there is a dash, it raises an error
+                hse_score = "ERROR: Please Check the Time Inputs"
+
+            # if total_hours < 0: #if they slept negative hours, ie. they entered the wrong am/pm, it raises an error
+            #     hse_score = "ERROR: negative hours slept, check am"
+            scores.append(hse_score)
+
+            ###SLPQUAL SCORE###
+            slp_qual_score = int(row[19])
+            scores.append(slp_qual_score)
+
+            ###MEDS SCORE###
+            meds_score = int(row[20])
+            scores.append(meds_score)
+
+            ###TIME IN BED SCORE###
+            #Given in hours
+            time1 = [int(row[1]), int(row[2]), row[3]]
+            time2 = [int(row[5]), int(row[6]), row[7]]
+            time_in_bed = calculate_time_difference(time1, time2)
+            time_in_bed = round(time_in_bed, 2)
+            scores.append(time_in_bed)
+
+            ###HOURS SLEPT SCORE###
+            ##!! must be input in the format '[hour] [min]'
+            answer = row[8]
+            if ' ' in answer:
+                split_answer = answer.split(' ')
+                minutes = int(split_answer[1])
+                mins_in_hours = minutes/ 60
+                total_slep_in_hrs = mins_in_hours + float(split_answer[0])
+                hours_slept = total_slep_in_hrs
+                scores.append(total_slep_in_hrs)
+            else:
+                hours_slept = answer
+                scores.append(answer)
+
+            ###SLEEP EFFICIENCY###
+
+            sleep_eff = float(hours_slept) / float(time_in_bed)
+            sleep_eff *= 100
+            sleep_eff = round(sleep_eff, 2)
+            if sleep_eff > 100:
+                sleep_eff = '*' + str(sleep_eff)
+            scores.append(sleep_eff)
+
+            ##BEDTIME##
+            hrs = 0
+            if row[3].lower() == "am":
+                if int(row[1]) == 12:  # Midnight
+                    hrs = 0
+                else:
+                    hrs = int(row[1])
+            elif row[3].lower() == "pm":
+                if int(row[1]) != 12:  # Afternoon/evening time
+                    hrs += 12
+                else:
+                    hrs = int(row[1])
+
+            bedtime_score = int(row[1]) + (int(row[2]) / 60)
+            bedtime_score = round(bedtime_score,2)
+            scores.append(bedtime_score)
+
+            ##WAKE TIME##
+            hrs = 0
+            if row[7].lower() == "am":
+                if int(row[5]) == 12:  # Midnight
+                    hrs = 0
+                else:
+                    hrs = int(row[5])
+            elif row[7].lower() == "pm":
+                if int(row[5]) != 12:  # Afternoon/evening time
+                    hrs += 12
+                else:
+                    hrs = int(row[5])
+
+            waketime_score = int(row[5]) + (int(row[6]) / 60)
+            waketime_score = round(waketime_score, 2)
+            scores.append(waketime_score)
+
+            ##SLEEP LATENCY##
+
+            slp_lat = int(row[4])
+            scores.append(slp_lat)
+
+            ###TOTAL SCORE###
+            try:
+                total_score = dur_score + dstb_score + laten_score + day_dis_score + hse_score + slp_qual_score + meds_score
+            except:
+                total_score = "ERROR: one or more scores are unavailable"
+            scores.append(total_score)
+
+            results_list.append(scores)
+
+            ## CATEGORICAL SLEEP QUALITY ##
+
+            if (type(total_score) == int) and (total_score <= 5):
+                slp_quality_category = "Good Sleep Quality."
+            elif (type(total_score) == int) and (total_score > 5) and (total_score <= 20):
+                slp_quality_category = "Bad Sleep Quality."
+            scores.append(slp_quality_category)
+
+
+def create_csv_file(data, filename):
+    """
+    Create a CSV file with the given filename and write the data (list of lists) as rows.
+    """
+    with open(filename, 'w') as csvfile:
+
+        for row in data:
+
+            st_row = str(row).strip("]").strip("[").strip("'")
+            st_row = st_row.replace("'", "")
+            csvfile.write(st_row + '\n')
+
+input_data = results_list
+
+# Call the function to create the CSV file
+create_csv_file(input_data, 'PSQI_RESULTS.csv')
+print("CSV file created successfully!")
